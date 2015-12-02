@@ -35,6 +35,36 @@ class TrigramModel(NGramModel):
                   symbols to be included as their own tokens in
                   self.nGramCounts. For more details, see the spec.
         """
+        text = self.prepData(text)
+        for i in range(0, len(text)):
+            for j in range(2, len(text[i]) - 2):
+                unigram1 = text[i][j]
+                unigram2 = text[i][j + 1]
+                unigram3 = text[i][j + 2]
+                count = 0
+                # if unigram1 has not appeared in nGramCounts, we should make it to be the  key of the 1st demension
+                if (self.nGramCounts).get(unigram1, 'N/A') == 'N/A':
+                    self.nGramCounts[unigram1] = {}
+                # if unigram2 has not appeared in nGramCounts, we should make it to be the  key of the 2nd demension
+                if (self.nGramCounts[unigram1]).get(unigram2, 'N/A') == 'N/A':
+                    self.nGramCounts[unigram1][unigram2] = {}
+                # if unigram3 has appeared as a 3rd-dimension key, we should not count the trigram repeatedly
+                if (self.nGramCounts[unigram1][unigram2]).get(unigram3, 'N/A') == 'N/A':
+                    for k in range(i, len(text)):
+                        # find the indexes of all unigram1 in text[k]
+                        indexOfUnigram1 = []
+                        for index,token in enumerate(text[k]):
+                            if token == unigram1:
+                                indexOfUnigram1.extend([index])
+                        # count how many times this trigram appears when unigram1 exists in text[k]
+                        if indexOfUnigram1 != []:
+                             for index in indexOfUnigram1:
+                                 if (text[k][index + 1] == unigram2 and text[k][index + 2] == unigram3):
+                                     count += 1
+                # update nGramCounts with trigram pair
+                if count != 0:
+                    self.nGramCounts[unigram1][unigram2][unigram3] = count
+
         return
 
     def trainingDataHasNGram(self, sentence):
